@@ -1,10 +1,36 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 import { getPublicCollectionBySlug } from "@/lib/supabase/queries";
 
 type CollectionPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata(
+  { params }: CollectionPageProps
+): Promise<Metadata> {
+  const { slug } = await params;
+  const collection = await getPublicCollectionBySlug(slug);
+
+  if (!collection) {
+    return {
+      title: "Not found",
+      description: "ページが見つかりませんでした。",
+    };
+  }
+
+  const description = collection.description || collection.title;
+
+  return {
+    title: collection.title,
+    description,
+    openGraph: {
+      title: collection.title,
+      description,
+    },
+  };
+}
 
 export default async function CollectionPage({ params }: CollectionPageProps) {
   const { slug } = await params;
